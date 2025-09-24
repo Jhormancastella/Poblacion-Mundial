@@ -1,1 +1,870 @@
-<h1>hola mundo</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Población Vida y Muerte en el Mundo</title>
+    <style>
+        :root {
+            --primary-color: #4a7fff;
+            --secondary-color: #4ade80;
+            --danger-color: #f87171;
+            --bg-color: #0a0a0a;
+            --text-color: #ffffff;
+            --card-bg: rgba(0, 0, 0, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .title {
+            text-align: center;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1/1;
+            margin: 0 auto 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #particle-canvas {
+            cursor: grab;
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(74, 127, 255, 0.4);
+        }
+
+        #particle-canvas:active {
+            cursor: grabbing;
+        }
+
+        .stats-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-label {
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-value {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--secondary-color);
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        .birth-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--secondary-color);
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .death-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--danger-color);
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(74, 222, 128, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+            }
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .controls button {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            backdrop-filter: blur(5px);
+        }
+
+        .controls button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .controls button.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .additional-stats {
+            width: 100%;
+            max-width: 500px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .additional-stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .additional-stat-title {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 5px;
+        }
+
+        .additional-stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .last-update {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-toggle button {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .mode-toggle button.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .copyright {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Estilos específicos para móvil */
+        @media (max-width: 767px) {
+            .title {
+                margin-bottom: 15px;
+            }
+
+            .stats-container {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .controls {
+                gap: 8px;
+            }
+
+            .controls button {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+
+            .additional-stats {
+                gap: 10px;
+                margin-top: 15px;
+            }
+
+            .additional-stat-card {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Población Vida y Muerte en el Mundo</h1>
+        
+        <div class="mode-toggle">
+            <button id="mode-points" class="active">Mundo Puntos</button>
+            <button id="mode-sphere">Gran Esfera</button>
+        </div>
+        
+        <div id="canvas-container">
+            <canvas id="particle-canvas"></canvas>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">
+                        <span class="live-indicator"></span>Población actual
+                    </div>
+                    <div class="stat-value" id="population">8,045,311,447</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">
+                        <span class="birth-indicator"></span>Nacimientos/minuto
+                    </div>
+                    <div class="stat-value" id="births">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">
+                        <span class="death-indicator"></span>Muertes/minuto
+                    </div>
+                    <div class="stat-value" id="deaths">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Cambio neto</div>
+                    <div class="stat-value" id="net-change">+0</div>
+                </div>
+            </div>
+            <div class="last-update" id="last-update">Última actualización: --:--:--</div>
+        </div>
+        
+        <div class="controls">
+            <button id="toggle-rotation" class="active">Rotar</button>
+            <button id="toggle-colors">Colores</button>
+            <button id="toggle-atmosphere">Atmósfera</button>
+            <button id="reset-view">Reiniciar</button>
+        </div>
+        
+        <div class="additional-stats">
+            <div class="additional-stat-card">
+                <div class="additional-stat-title">Población por continente</div>
+                <div class="additional-stat-value" id="asia">4,743M</div>
+            </div>
+            <div class="additional-stat-card">
+                <div class="additional-stat-title">Tasa de natalidad</div>
+                <div class="additional-stat-value" id="birth-rate">17.5‰</div>
+            </div>
+            <div class="additional-stat-card">
+                <div class="additional-stat-title">Tasa de mortalidad</div>
+                <div class="additional-stat-value" id="death-rate">7.7‰</div>
+            </div>
+            <div class="additional-stat-card">
+                <div class="additional-stat-title">Crecimiento anual</div>
+                <div class="additional-stat-value" id="growth-rate">+1.05%</div>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            Todos los derechos reservados Jhorman Castellanos
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Configuración del canvas responsiva
+        function setupCanvas() {
+            const container = document.getElementById('canvas-container');
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            
+            // Ajustar el tamaño del canvas al contenedor
+            canvas.width = containerWidth;
+            canvas.height = containerHeight;
+            
+            // Actualizar el radio basado en el nuevo tamaño
+            radius = Math.min(containerWidth, containerHeight) * 0.4;
+        }
+        
+        // Variables de estado
+        let rotationX = 0;
+        let rotationY = 0;
+        let autoRotate = true;
+        let useColors = false;
+        let showAtmosphere = false;
+        let mouseDown = false;
+        let mouseX = 0;
+        let mouseY = 0;
+        let radius;
+        let mode = 'points'; // 'points' o 'sphere'
+        
+        // Estadísticas de población en tiempo real
+        let currentPopulation = 8045311447;
+        let birthsThisMinute = 0;
+        let deathsThisMinute = 0;
+        const birthsPerMinute = 267;
+        const deathsPerMinute = 107;
+        const netChangePerMinute = birthsPerMinute - deathsPerMinute;
+        
+        // Variables para el contador en tiempo real
+        let startTime = Date.now();
+        let lastSecond = 0;
+        
+        // Función para generar puntos en una esfera
+        function generateSpherePoints() {
+            particles.length = 0;
+            
+            // Generar puntos distribuidos en una esfera
+            for (let i = 0; i < numPoints; i++) {
+                const phi = Math.acos(-1 + (2 * i) / numPoints);
+                const theta = Math.sqrt(numPoints * Math.PI) * phi;
+                
+                const x = radius * Math.cos(theta) * Math.sin(phi);
+                const y = radius * Math.sin(theta) * Math.sin(phi);
+                const z = radius * Math.cos(phi);
+                
+                // Determinar si el punto pertenece a un continente (simplificado)
+                const isLand = Math.random() > 0.7;
+                
+                // Asignar color
+                let color;
+                if (useColors) {
+                    if (isLand) {
+                        // Colores cálidos para tierra
+                        color = `hsl(${30 + Math.random() * 30}, 70%, 60%)`;
+                    } else {
+                        // Colores fríos para agua
+                        color = `hsl(${200 + Math.random() * 40}, 70%, 50%)`;
+                    }
+                } else {
+                    // Blanco para todos los puntos
+                    color = '#ffffff';
+                }
+                
+                // Tamaño uniforme para puntos
+                const size = 1.2;
+                
+                particles.push({
+                    x: x,
+                    y: y,
+                    z: z,
+                    color: color,
+                    size: size,
+                    isLand: isLand
+                });
+            }
+        }
+        
+        // Función para rotar puntos
+        function rotatePoint(point, rotX, rotY) {
+            // Rotar en Y
+            let x = point.x * Math.cos(rotY) - point.z * Math.sin(rotY);
+            let z = point.x * Math.sin(rotY) + point.z * Math.cos(rotY);
+            
+            // Rotar en X
+            let y = point.y * Math.cos(rotX) - z * Math.sin(rotX);
+            z = point.y * Math.sin(rotX) + z * Math.cos(rotX);
+            
+            return { x, y, z };
+        }
+        
+        // Función para dibujar puntos
+        function drawPoints() {
+            // Limpiar canvas con fondo negro
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Ordenar puntos por profundidad (de atrás hacia adelante)
+            const sortedParticles = particles.map(particle => {
+                const rotated = rotatePoint(particle, rotationX, rotationY);
+                return {
+                    ...particle,
+                    ...rotated,
+                    depth: rotated.z
+                };
+            }).sort((a, b) => a.depth - b.depth);
+            
+            // Dibujar puntos
+            sortedParticles.forEach(particle => {
+                const rotated = rotatePoint(particle, rotationX, rotationY);
+                
+                // Proyectar 3D a 2D
+                const scale = 300 / (300 + rotated.z);
+                const x = canvas.width / 2 + rotated.x * scale;
+                const y = canvas.height / 2 + rotated.y * scale;
+                const size = particle.size * scale;
+                
+                // Dibujar punto
+                ctx.beginPath();
+                ctx.fillStyle = particle.color;
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Añadir brillo a los puntos
+                if (rotated.z > 0) {
+                    ctx.beginPath();
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.arc(x, y, size * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+        
+        // Función para dibujar una gran esfera con características de la Tierra
+        function drawSphere() {
+            // Limpiar canvas con fondo negro
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Calcular el centro del canvas
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Dibujar la esfera base (océanos)
+            const baseGradient = ctx.createRadialGradient(
+                centerX - radius * 0.3, 
+                centerY - radius * 0.3, 
+                0,
+                centerX, 
+                centerY, 
+                radius
+            );
+            
+            if (useColors) {
+                baseGradient.addColorStop(0, 'rgba(64, 164, 223, 0.9)'); // Azul claro para océanos
+                baseGradient.addColorStop(0.4, 'rgba(41, 128, 185, 0.8)'); // Azul medio
+                baseGradient.addColorStop(0.8, 'rgba(21, 67, 96, 0.7)'); // Azul oscuro
+                baseGradient.addColorStop(1, 'rgba(9, 32, 63, 0.9)'); // Azul muy oscuro
+            } else {
+                baseGradient.addColorStop(0, 'rgba(200, 230, 255, 0.9)'); // Azul muy claro
+                baseGradient.addColorStop(0.4, 'rgba(150, 200, 255, 0.8)'); // Azul claro
+                baseGradient.addColorStop(0.8, 'rgba(100, 150, 200, 0.7)'); // Azul medio
+                baseGradient.addColorStop(1, 'rgba(50, 100, 150, 0.9)'); // Azul oscuro
+            }
+            
+            ctx.beginPath();
+            ctx.fillStyle = baseGradient;
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Dibujar continentes
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.clip();
+            
+            // Calcular posición de los continentes según la rotación
+            const continentOffsetX = Math.sin(rotationY) * radius * 0.7;
+            const continentOffsetY = Math.cos(rotationX) * radius * 0.3;
+            
+            // Continente 1 (similar a África/Europa)
+            const continent1Gradient = ctx.createRadialGradient(
+                centerX + continentOffsetX - radius * 0.2, 
+                centerY + continentOffsetY, 
+                0,
+                centerX + continentOffsetX, 
+                centerY + continentOffsetY, 
+                radius * 0.6
+            );
+            
+            continent1Gradient.addColorStop(0, 'rgba(34, 139, 34, 0.9)'); // Verde bosque
+            continent1Gradient.addColorStop(0.5, 'rgba(85, 107, 47, 0.8)'); // Verde oliva
+            continent1Gradient.addColorStop(1, 'rgba(139, 90, 43, 0.7)'); // Marrón tierra
+            
+            ctx.beginPath();
+            ctx.fillStyle = continent1Gradient;
+            ctx.ellipse(
+                centerX + continentOffsetX, 
+                centerY + continentOffsetY, 
+                radius * 0.6, 
+                radius * 0.8, 
+                rotationY, 
+                0, 
+                Math.PI * 2
+            );
+            ctx.fill();
+            
+            // Continente 2 (similar a América)
+            const continent2Gradient = ctx.createRadialGradient(
+                centerX - continentOffsetX - radius * 0.1, 
+                centerY + continentOffsetY * 0.5, 
+                0,
+                centerX - continentOffsetX, 
+                centerY + continentOffsetY * 0.5, 
+                radius * 0.5
+            );
+            
+            continent2Gradient.addColorStop(0, 'rgba(34, 139, 34, 0.9)');
+            continent2Gradient.addColorStop(0.5, 'rgba(85, 107, 47, 0.8)');
+            continent2Gradient.addColorStop(1, 'rgba(139, 90, 43, 0.7)');
+            
+            ctx.beginPath();
+            ctx.fillStyle = continent2Gradient;
+            ctx.ellipse(
+                centerX - continentOffsetX, 
+                centerY + continentOffsetY * 0.5, 
+                radius * 0.5, 
+                radius * 0.9, 
+                -rotationY, 
+                0, 
+                Math.PI * 2
+            );
+            ctx.fill();
+            
+            // Continente 3 (similar a Asia/Australia)
+            const continent3Gradient = ctx.createRadialGradient(
+                centerX + continentOffsetX * 0.5, 
+                centerY - continentOffsetY * 0.5, 
+                0,
+                centerX + continentOffsetX * 0.5, 
+                centerY - continentOffsetY * 0.5, 
+                radius * 0.7
+            );
+            
+            continent3Gradient.addColorStop(0, 'rgba(34, 139, 34, 0.9)');
+            continent3Gradient.addColorStop(0.5, 'rgba(85, 107, 47, 0.8)');
+            continent3Gradient.addColorStop(1, 'rgba(139, 90, 43, 0.7)');
+            
+            ctx.beginPath();
+            ctx.fillStyle = continent3Gradient;
+            ctx.ellipse(
+                centerX + continentOffsetX * 0.5, 
+                centerY - continentOffsetY * 0.5, 
+                radius * 0.7, 
+                radius * 0.6, 
+                rotationX, 
+                0, 
+                Math.PI * 2
+            );
+            ctx.fill();
+            
+            ctx.restore();
+            
+            // Dibujar nubes si está activado el modo de colores
+            if (useColors) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.clip();
+                
+                // Nubes blancas semi-transparentes
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                
+                // Nube 1
+                ctx.beginPath();
+                ctx.arc(
+                    centerX + Math.sin(rotationY * 0.5) * radius * 0.6, 
+                    centerY + Math.cos(rotationX * 0.5) * radius * 0.3, 
+                    radius * 0.2, 
+                    0, 
+                    Math.PI * 2
+                );
+                ctx.fill();
+                
+                // Nube 2
+                ctx.beginPath();
+                ctx.arc(
+                    centerX - Math.sin(rotationY * 0.7) * radius * 0.5, 
+                    centerY - Math.cos(rotationX * 0.7) * radius * 0.4, 
+                    radius * 0.15, 
+                    0, 
+                    Math.PI * 2
+                );
+                ctx.fill();
+                
+                ctx.restore();
+            }
+            
+            // Dibujar atmósfera si está activada
+            if (showAtmosphere) {
+                const atmosphereGradient = ctx.createRadialGradient(
+                    centerX, 
+                    centerY, 
+                    radius,
+                    centerX, 
+                    centerY, 
+                    radius * 1.1
+                );
+                
+                atmosphereGradient.addColorStop(0, 'rgba(135, 206, 250, 0)');
+                atmosphereGradient.addColorStop(0.8, 'rgba(135, 206, 250, 0.1)');
+                atmosphereGradient.addColorStop(1, 'rgba(135, 206, 250, 0.3)');
+                
+                ctx.beginPath();
+                ctx.fillStyle = atmosphereGradient;
+                ctx.arc(centerX, centerY, radius * 1.1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Añadir brillo a la esfera
+            const highlight = ctx.createRadialGradient(
+                centerX - radius * 0.3, 
+                centerY - radius * 0.3, 
+                0,
+                centerX, 
+                centerY, 
+                radius * 0.7
+            );
+            
+            highlight.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+            highlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            
+            ctx.beginPath();
+            ctx.fillStyle = highlight;
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Añadir sombra exterior
+            const shadow = ctx.createRadialGradient(
+                centerX, 
+                centerY, 
+                radius * 0.8,
+                centerX, 
+                centerY, 
+                radius * 1.2
+            );
+            
+            shadow.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            shadow.addColorStop(1, 'rgba(0, 0, 0, 0.5)');
+            
+            ctx.beginPath();
+            ctx.fillStyle = shadow;
+            ctx.arc(centerX, centerY, radius * 1.2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Función para dibujar según el modo actual
+        function draw() {
+            if (mode === 'points') {
+                drawPoints();
+            } else {
+                drawSphere();
+            }
+        }
+        
+        // Función para actualizar estadísticas de población
+        function updatePopulationStats() {
+            const now = Date.now();
+            const elapsedSeconds = Math.floor((now - startTime) / 1000);
+            
+            // Actualizar cada segundo
+            if (elapsedSeconds > lastSecond) {
+                lastSecond = elapsedSeconds;
+                
+                // Calcular nacimientos y muertes en el último segundo
+                const birthsPerSecond = birthsPerMinute / 60;
+                const deathsPerSecond = deathsPerMinute / 60;
+                
+                // Usar distribución aleatoria para mayor realismo
+                birthsThisMinute += Math.floor(Math.random() * birthsPerSecond * 2);
+                deathsThisMinute += Math.floor(Math.random() * deathsPerSecond * 2);
+                
+                // Actualizar población
+                currentPopulation += (birthsPerSecond - deathsPerSecond);
+                
+                // Actualizar UI cada 10 segundos
+                if (elapsedSeconds % 10 === 0) {
+                    document.getElementById('births').textContent = birthsThisMinute;
+                    document.getElementById('deaths').textContent = deathsThisMinute;
+                    document.getElementById('net-change').textContent = 
+                        (birthsThisMinute - deathsThisMinute >= 0 ? '+' : '') + 
+                        (birthsThisMinute - deathsThisMinute);
+                    
+                    // Formatear población con separadores de miles
+                    document.getElementById('population').textContent = 
+                        currentPopulation.toLocaleString('es-ES', {maximumFractionDigits: 0});
+                    
+                    // Actualizar hora de última actualización
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString('es-ES');
+                    document.getElementById('last-update').textContent = 
+                        `Última actualización: ${timeString}`;
+                }
+            }
+        }
+        
+        // Animación
+        function animate() {
+            if (autoRotate) {
+                rotationY += 0.003;
+            }
+            
+            draw();
+            updatePopulationStats();
+            requestAnimationFrame(animate);
+        }
+        
+        // Eventos del mouse
+        canvas.addEventListener('mousedown', (e) => {
+            mouseDown = true;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!mouseDown) return;
+            
+            const deltaX = e.clientX - mouseX;
+            const deltaY = e.clientY - mouseY;
+            
+            rotationY += deltaX * 0.01;
+            rotationX += deltaY * 0.01;
+            
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            mouseDown = false;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            mouseDown = false;
+        });
+        
+        // Controles
+        document.getElementById('toggle-rotation').addEventListener('click', function() {
+            autoRotate = !autoRotate;
+            this.classList.toggle('active');
+        });
+        
+        document.getElementById('toggle-colors').addEventListener('click', function() {
+            useColors = !useColors;
+            this.classList.toggle('active');
+            generateSpherePoints();
+        });
+        
+        document.getElementById('toggle-atmosphere').addEventListener('click', function() {
+            showAtmosphere = !showAtmosphere;
+            this.classList.toggle('active');
+        });
+        
+        document.getElementById('reset-view').addEventListener('click', function() {
+            rotationX = 0;
+            rotationY = 0;
+        });
+        
+        // Controles de modo
+        document.getElementById('mode-points').addEventListener('click', function() {
+            mode = 'points';
+            this.classList.add('active');
+            document.getElementById('mode-sphere').classList.remove('active');
+        });
+        
+        document.getElementById('mode-sphere').addEventListener('click', function() {
+            mode = 'sphere';
+            this.classList.add('active');
+            document.getElementById('mode-points').classList.remove('active');
+        });
+        
+        // Actualizar canvas cuando cambia el tamaño de la ventana
+        window.addEventListener('resize', () => {
+            setupCanvas();
+            generateSpherePoints();
+        });
+        
+        // Inicializar
+        setupCanvas();
+        
+        // Variables para el modo de puntos
+        const particles = [];
+        const numPoints = 3000;
+        generateSpherePoints();
+        
+        animate();
+    </script>
+</body>
+</html>
