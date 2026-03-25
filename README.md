@@ -1,203 +1,209 @@
-
 # 🌍 Población Vida y Muerte en el Mundo
 
-Visualización interactiva en tiempo real de la población mundial con estadísticas demográficas y representación 3D.
+Visualización interactiva 3D en tiempo real de la población mundial con arquitectura modular, PWA support e integración con Google Sheets.
 
-## Url
-https://jhormancastella.github.io/Poblacion-Mundial/
+**URL**: https://jhormancastella.github.io/Poblacion-Mundial/
 
 ---
 
-![Demo](https://img.shields.io/badge/Status-Activo-brightgreen)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
+![Demo](https://img.shields.io/badge/Status-Refactored-success)
+![PWA](https://img.shields.io/badge/PWA-Ready-blue)
+![ES6](https://img.shields.io/badge/ES6-Modules-yellow)
+![Accessibility](https://img.shields.io/badge/A11y-Enhanced-green)
 
-## 📊 Descripción
+## ✨ Nuevas Características v2.0
 
-Proyecto web que muestra la población mundial en tiempo real mediante dos modos de visualización:
-- **Mundo Puntos**: 3000 puntos distribuidos en esfera representando la población
-- **Gran Esfera**: Representación estilizada de la Tierra con continentes
+### 🏗️ Arquitectura Modular
+- **ES6 Modules**: Código organizado en módulos independientes
+- **Store Pattern**: Gestión centralizada de estado reactivo
+- **Separación de responsabilidades**: Config, utils, renderer, stats, events
 
-## 🚀 Características
+### 📱 Progressive Web App (PWA)
+- **Service Worker**: Funciona offline
+- **Manifest**: Instalable en dispositivos móviles
+- **Caché inteligente**: Assets precargados para performance
 
-### 🌐 Visualización 3D Interactiva
-- Rotación automática y control manual (arrastrar)
-- Dos modos de visualización intercambiables
-- Efectos de profundidad y iluminación realistas
+### 📊 Google Sheets API
+- **Datos dinámicos**: Actualiza estadísticas desde hojas de cálculo
+- **Auto-refresh**: Sincronización automática cada 5 minutos
+- **Persistencia**: Credenciales almacenadas en localStorage
 
-### 📈 Estadísticas en Tiempo Real
-- Población mundial actualizada
-- Nacimientos y muertes por minuto
-- Tasa de crecimiento neto
-- Datos demográficos por continente
+### ♿ Accesibilidad Mejorada
+- **ARIA labels**: Navegación con lectores de pantalla
+- **Keyboard shortcuts**: Espacio (rotar), C (colores), A (atmósfera), R (reset)
+- **Semantic HTML**: Estructura semántica correcta
+- **Focus management**: Estados de foco visibles
 
-### 🎨 Personalización
-- Alternar entre modo color y monocromático
-- Activar/desactivar atmósfera
-- Controles de rotación y vista
-
-## 🛠️ Tecnologías Utilizadas
-
-- **HTML5** - Estructura semántica
-- **CSS3** - Estilos responsive y variables CSS
-- **JavaScript** - Lógica interactiva y Canvas API
-- **Canvas 2D** - Renderizado gráfico 3D
-
-## 📁 Estructura del Proyecto
+## 📁 Nueva Estructura de Proyecto
 
 ```
-
-poblacion-mundo/
+poblacion-mundial/
 │
-├──index.html          # Archivo principal (todo-en-uno)
-├──README.md           # Documentación
-└──assets/             # Recursos (si los hay)
-
+├── index.html              # HTML semántico con accesibilidad
+├── app.js                  # Entry point - orquestador principal
+├── sw.js                   # Service Worker para PWA
+├── manifest.json           # Configuración PWA
+├── README.md               # Documentación
+│
+├── css/
+│   └── styles.css          # CSS modular con variables y design tokens
+│
+├── js/
+│   ├── config.js           # Constantes y configuración centralizada
+│   ├── store.js            # Gestión de estado (Store pattern)
+│   ├── utils.js            # Helpers y utilidades
+│   ├── particles.js        # Sistema de partículas 3D
+│   ├── renderer.js         # Renderizado Canvas optimizado
+│   ├── stats.js            # Cálculo y actualización de estadísticas
+│   ├── events.js           # Manejadores de eventos (mouse, touch, keyboard)
+│   └── sheets.js           # Integración Google Sheets API
+│
+└── assets/                 # Recursos estáticos (vacío por ahora)
 ```
 
-## ⚙️ Instalación y Uso
+## 🚀 Cómo Usar
 
-1. **Clonar o descargar** el proyecto
+### Instalación Local
 ```bash
-git clone 
-```
-
-1. Abrir el archivo index.html en un navegador web
-
-```bash
-open index.html
+git clone https://github.com/jhormancastella/Poblacion-Mundial.git
+cd Poblacion-Mundial
+# Servir con cualquier servidor estático
+npx serve .
 # o
-xdg-open index.html
+python -m http.server 8000
 ```
 
-1. Interactuar con la visualización
+### Configurar Google Sheets
+1. Crear proyecto en [Google Cloud Console](https://console.cloud.google.com/)
+2. Habilitar Google Sheets API
+3. Crear API Key
+4. Crear hoja de cálculo con datos:
+   | Población Asia | Tasa Natalidad | Tasa Mortalidad | Crecimiento |
+   |----------------|----------------|-----------------|-------------|
+   | 4,743M         | 17.5‰          | 7.7‰            | +1.05%      |
+5. Compartir spreadsheet y obtener ID
+6. En consola del navegador:
+```javascript
+populationApp.setGoogleSheetsCredentials('TU_API_KEY', 'TU_SPREADSHEET_ID');
+```
 
-· Click en botones de modo
-· Arrastrar para rotar vista 3D
-· Usar controles para personalizar
+### Atajos de Teclado
+| Tecla | Acción |
+|-------|--------|
+| Espacio | Activar/desactivar rotación |
+| C | Alternar colores |
+| A | Mostrar/ocultar atmósfera |
+| R | Reiniciar vista |
+| 1 | Modo puntos |
+| 2 | Modo esfera |
 
-🎮 Controles
+## 🏛️ Patrones de Arquitectura
 
-Botón Función
-Mundo Puntos Cambia a visualización por puntos
-Gran Esfera Cambia a visualización de esfera terrestre
-Rotar Activa/desactiva rotación automática
-Colores Alterna entre color y blanco/negro
-Atmósfera Muestra/oculta capa atmosférica
-Reiniciar Restablece vista inicial
+### Store Pattern (Gestión de Estado)
+```javascript
+// js/store.js
+store.setState({ rotation: { x: 0, y: 0.5 } });
+store.subscribe('rotation', (newVal, oldVal) => {
+    renderer.render();
+});
+store.toggle('autoRotate');
+```
 
-📊 Datos Demográficos
+### Módulos ES6
+```javascript
+// app.js
+import { CONFIG } from './js/config.js';
+import { store } from './js/store.js';
+import { renderer } from './js/renderer.js';
+import { statsManager } from './js/stats.js';
+import { eventManager } from './js/events.js';
+```
 
-Estadísticas Principales
+### Configuración Centralizada
+```javascript
+// js/config.js
+export const CONFIG = {
+    particles: { count: 3000, baseSize: 1.2 },
+    animation: { autoRotateSpeed: 0.003 },
+    population: { birthsPerMinute: 267, deathsPerMinute: 107 }
+};
+```
 
-· Población actual: 8,045+ millones
-· Nacimientos/minuto: ≈267
-· Muertes/minuto: ≈107
-· Crecimiento neto: +160/minuto
+## 🎨 Sistema de Diseño
 
-Tasas Demográficas
-
-· Natalidad: 17.5‰
-· Mortalidad: 7.7‰
-· Crecimiento anual: +1.05%
-
-🔧 Configuración Técnica
-
-Variables CSS Personalizadas
-
+### Variables CSS (Design Tokens)
 ```css
 :root {
     --primary-color: #4a7fff;
     --secondary-color: #4ade80;
     --danger-color: #f87171;
-    --bg-color: #0a0a0a;
-    --text-color: #ffffff;
+    
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.25rem;
+    
+    --border-radius-sm: 10px;
+    --border-radius-md: 15px;
+    --border-radius-lg: 20px;
+    
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
 }
 ```
 
-Parámetros de Simulación
+## 📊 Datos Demográficos
 
-```javascript
-const birthsPerMinute = 267;
-const deathsPerMinute = 107;
-const numPoints = 3000;  // Puntos en modo esfera
-```
+| Estadística | Valor | Fuente |
+|-------------|-------|--------|
+| Población mundial | ~8,045M | Cálculo en tiempo real |
+| Nacimientos/min | ~267 | ONU/Worldometer |
+| Muertes/min | ~107 | ONU/Worldometer |
+| Crecimiento neto | +160/min | Cálculo propio |
+| Natalidad | 17.5‰ | Banco Mundial |
+| Mortalidad | 7.7‰ | Banco Mundial |
 
-📱 Responsive Design
+## 🔧 Optimizaciones de Performance
 
-El diseño se adapta a:
+- **RequestAnimationFrame**: Throttling a 60fps
+- **Dirty rectangles**: Solo redibuja cuando hay cambios
+- **Depth sorting**: Ordenamiento por profundidad eficiente
+- **Canvas pooling**: Contexto 2D reutilizado
+- **Service Worker**: Caché de assets para carga instantánea offline
 
-· Escritorio: Vista completa con todos los elementos
-· Tablet: Reorganización optimizada
-· Móvil: Interfaz touch-friendly
+## 🌐 Compatibilidad
 
-🎯 Funcionalidades Avanzadas
+| Navegador | Versión | Soporte |
+|-----------|---------|---------|
+| Chrome | 80+ | ✅ Completo |
+| Firefox | 75+ | ✅ Completo |
+| Safari | 13+ | ✅ Completo |
+| Edge | 80+ | ✅ Completo |
+| Opera | 67+ | ✅ Completo |
 
-Algoritmo de Distribución Esférica
+## 📝 Changelog
 
-```javascript
-// Distribución uniforme de puntos en esfera
-const phi = Math.acos(-1 + (2 * i) / numPoints);
-const theta = Math.sqrt(numPoints * Math.PI) * phi;
-```
+### v2.0 - Refactorización Mayor
+- ✅ Arquitectura modular con ES6
+- ✅ Store pattern para estado
+- ✅ PWA con Service Worker
+- ✅ Google Sheets API
+- ✅ Mejoras de accesibilidad (ARIA)
+- ✅ Atajos de teclado
+- ✅ CSS con design tokens
+- ✅ Touch events para móvil
 
-Proyección 3D a 2D
+### v1.0 - Lanzamiento Inicial
+- Visualización 3D Canvas
+- Estadísticas en tiempo real
+- Dos modos de visualización
+- Controles básicos
 
-```javascript
-const scale = 300 / (300 + rotated.z);
-const x = canvas.width / 2 + rotated.x * scale;
-const y = canvas.height / 2 + rotated.y * scale;
-```
-
-Sistema de Partículas
-
-· 3000 partículas representando distribución poblacional
-· Ordenamiento por profundidad (Z-buffering)
-· Efectos de brillo y transparencia
-
-🌟 Características Únicas
-
-Modo Puntos
-
-· Representación abstracta de distribución poblacional
-· Puntos coloreados por tipo (tierra/agua)
-· Efectos de profundidad realistas
-
-Modo Esfera
-
-· Texturizado estilizado de continentes
-· Efectos de nubes y atmósfera
-· Iluminación dinámica
-
-🔄 Actualizaciones en Tiempo Real
-
-· Población actualizada cada segundo
-· Estadísticas refrescadas cada 10 segundos
-· Timestamp de última actualización
-
-🐛 Solución de Problemas
-
-Problemas Comunes
-
-1. Canvas no visible: Verificar soporte de Canvas en navegador
-2. Rotación no funciona: Click en botón "Rotar"
-3. Estadísticas estáticas: Recargar página
-
-Compatibilidad
-
-· ✅ Chrome 90+
-· ✅ Firefox 88+
-· ✅ Safari 14+
-· ✅ Edge 90+
-
-📄 Licencia
+## 📄 Licencia
 
 © 2024 Jhorman Castellanos. Todos los derechos reservados.
 
-👨‍💻 Autor
-
-Jhorman Castellanos
-Desarrollador Frontend y Visualización de Datos
-
 ---
+
+**Autor**: Jhorman Castellanos  
+**Rol**: Desarrollador Frontend & Visualización de Datos
